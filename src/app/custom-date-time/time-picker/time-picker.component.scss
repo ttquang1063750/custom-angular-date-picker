@@ -1,0 +1,22 @@
+app-time-picker {
+  display: flex;
+  width: 100%;
+  background-color: white;
+  border-radius: 4px;
+
+  .container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    line-height: 1;
+    margin: 0 auto;
+    width: 100px;
+
+    .time {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}

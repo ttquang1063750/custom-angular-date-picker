@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="time">
+    <button mat-icon-button (click)="increase('hour')">
+      <mat-icon>expand_less</mat-icon>
+    </button>
+    <span>{{hours}}</span>
+    <button mat-icon-button (click)="decrease('hour')">
+      <mat-icon>expand_more</mat-icon>
+    </button>
+  </div>
+  <div class="time">:</div>
+  <div class="time">
+    <button mat-icon-button (click)="increase('minute')">
+      <mat-icon>expand_less</mat-icon>
+    </button>
+    <span>{{minutes}}</span>
+    <button mat-icon-button (click)="decrease('minute')">
+      <mat-icon>expand_more</mat-icon>
+    </button>
+  </div>
+</div>
