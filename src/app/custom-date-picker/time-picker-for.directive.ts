@@ -112,7 +112,7 @@ export class TimePickerForDirective implements OnInit {
     }
     return {
       formControl: this.formControl,
-      datePickerId: this.datePicker.id
+      datePickerId: this.datePicker?.id
     };
   }
 
@@ -141,7 +141,8 @@ export class TimePickerForDirective implements OnInit {
             .createComponent(
               TimePickerComponent,
               this.document.querySelector(`#${this.datePicker.id}`),
-              this.props()
+              this.props(),
+              'wrapper-core-time-picker'
             );
         }),
         switchMap(() => {

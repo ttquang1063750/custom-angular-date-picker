@@ -2,7 +2,6 @@ import {Component, HostBinding, Inject, OnInit, ViewEncapsulation} from '@angula
 import * as moment from 'moment';
 import {TIME_PICKER_FOR} from '../dom.service';
 import {FormControl} from '@angular/forms';
-import {MatDatepicker} from '@angular/material/datepicker';
 import {DOCUMENT} from '@angular/common';
 
 @Component({
@@ -18,6 +17,7 @@ export class TimePickerComponent implements OnInit {
   private hours: number;
   private minutes: number;
 
+  @HostBinding('class') className = 'core-time-picker';
   @HostBinding('class.invisible')
   get invisible() {
     if (this.datePickerId) {

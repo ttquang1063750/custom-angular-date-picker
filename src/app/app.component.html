@@ -2,41 +2,63 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="block">
       <mat-form-field appearance="outline">
-        <mat-label>Custom Date Picker</mat-label>
-        <input matInput [matDatepicker]="datepicker" [timePickerFor]="datepicker" format="YYYY/MM/DD HH:mm:ss" formControlName="date1">
+        <mat-label>Date Picker with new Date()</mat-label>
+        <input matInput [matDatepicker]="datepicker" [timePickerFor]="datepicker" format="YYYY/MM/DD HH:mm:ss"
+               formControlName="date1">
         <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
         <mat-datepicker #datepicker></mat-datepicker>
-        <mat-error *ngIf="form.get('date1').hasError('matDatepickerParse')">Parse Error with {{form.get('date1').errors.matDatepickerParse.text}}</mat-error>
-      </mat-form-field>
-    </div>
-
-
-    <div class="block">
-      <mat-form-field appearance="outline">
-        <mat-label>Time Picker Only</mat-label>
-        <input matInput placeholder="00:05" autocomplete="off" [timePickerFor] format="HH:mm:ss" formControlName="date2">
+        <mat-error *ngIf="form.get('date1').hasError('matDatepickerParse')">Parse Error
+          with {{form.get('date1').errors.matDatepickerParse.text}}</mat-error>
       </mat-form-field>
     </div>
 
     <div class="block">
       <mat-form-field appearance="outline">
-        <mat-label>Choose a date</mat-label>
-        <input [formControl]="date" matInput [matDatepicker]="picker" [timePickerFor]="picker" format="YYYY/MM/DD HH:mm:ss">
+        <mat-label>Time Picker Only with Date.now()</mat-label>
+        <input matInput placeholder="00:05" autocomplete="off" [timePickerFor] format="HH:mm:ss"
+               formControlName="date2">
+      </mat-form-field>
+    </div>
+
+    <div class="block">
+      <mat-form-field appearance="outline">
+        <mat-label>Date Picker with moment()</mat-label>
+        <input formControlName="date3" matInput [matDatepicker]="picker" [timePickerFor]="picker"
+               format="YYYY/MM/DD HH:mm:ss">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
     </div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Enter a date range</mat-label>
-      <mat-date-range-input [rangePicker]="pickerRange">
-        <input matStartDate placeholder="Start date">
-        <input matEndDate placeholder="End date">
-      </mat-date-range-input>
-      <mat-datepicker-toggle matSuffix [for]="pickerRange"></mat-datepicker-toggle>
-      <mat-date-range-picker #pickerRange></mat-date-range-picker>
-    </mat-form-field>
+    <div class="block">
+      <mat-form-field appearance="outline">
+        <mat-label>Range Date Picker with Date.now()</mat-label>
+        <mat-date-range-input
+          [formGroup]="form.get('range')"
+          [rangePicker]="pickerRange"
+        >
+          <input
+            matStartDate
+            formControlName="start"
+            [timePickerFor]="pickerRange"
+            format="YYYY/MM/DD HH:mm:ss"
+            placeholder="Start date"
+          >
+          <input
+            matEndDate
+            formControlName="end"
+            [timePickerFor]="pickerRange"
+            format="YYYY/MM/DD HH:mm:ss"
+            placeholder="End date"
+          >
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="pickerRange"></mat-datepicker-toggle>
+        <mat-date-range-picker #pickerRange></mat-date-range-picker>
 
+        <mat-error *ngIf="form.get('range').get('start').hasError('matStartDateInvalid')">Invalid start date</mat-error>
+        <mat-error *ngIf="form.get('range').get('end').hasError('matEndDateInvalid')">Invalid end date</mat-error>
+      </mat-form-field>
+    </div>
 
     <div class="block">
       <button mat-raised-button color="accent" type="submit">
