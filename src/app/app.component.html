@@ -6,6 +6,7 @@
         <input matInput [matDatepicker]="datepicker" [timePickerFor]="datepicker" format="YYYY/MM/DD HH:mm:ss" formControlName="date1">
         <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
         <mat-datepicker #datepicker></mat-datepicker>
+        <mat-error *ngIf="form.get('date1').hasError('matDatepickerParse')">Parse Error with {{form.get('date1').errors.matDatepickerParse.text}}</mat-error>
       </mat-form-field>
     </div>
 
@@ -17,24 +18,24 @@
       </mat-form-field>
     </div>
 
-<!--    <div class="block">-->
-<!--      <mat-form-field appearance="outline" cdkOverlayOrigin #originOverlay="cdkOverlayOrigin" [class.drop-down-input-active]="showPanel$ | async">-->
-<!--        <mat-label>Overlay</mat-label>-->
-<!--        <input #inputOverlayElement matInput autocomplete="off">-->
-<!--      </mat-form-field>-->
-<!--      <ng-template-->
-<!--        cdkConnectedOverlay-->
-<!--        cdkConnectedOverlayHasBackdrop-->
-<!--        [cdkConnectedOverlayScrollStrategy]="scrollStrategy"-->
-<!--        [cdkConnectedOverlayOrigin]="originOverlay"-->
-<!--        [cdkConnectedOverlayOpen]="showPanel$ | async"-->
-<!--        [cdkConnectedOverlayPositions]="positions"-->
-<!--      >-->
-<!--        <section class="drop-down-serch-panel mat-elevation-z1">-->
-<!--          My Panel-->
-<!--        </section>-->
-<!--      </ng-template>-->
-<!--    </div>-->
+    <div class="block">
+      <mat-form-field appearance="outline">
+        <mat-label>Choose a date</mat-label>
+        <input [formControl]="date" matInput [matDatepicker]="picker" [timePickerFor]="picker" format="YYYY/MM/DD HH:mm:ss">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Enter a date range</mat-label>
+      <mat-date-range-input [rangePicker]="pickerRange">
+        <input matStartDate placeholder="Start date">
+        <input matEndDate placeholder="End date">
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="pickerRange"></mat-datepicker-toggle>
+      <mat-date-range-picker #pickerRange></mat-date-range-picker>
+    </mat-form-field>
 
 
     <div class="block">

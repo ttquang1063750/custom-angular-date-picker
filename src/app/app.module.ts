@@ -5,7 +5,7 @@ import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MaterialModule} from './material.module';
-import {CustomDateTimeModule} from './custom-date-time/custom-date-time.module';
+import {CustomDatePickerModule} from './custom-date-picker/custom-date-picker.module';
 
 @NgModule({
   declarations: [
@@ -17,7 +17,7 @@ import {CustomDateTimeModule} from './custom-date-time/custom-date-time.module';
     FormsModule,
     ReactiveFormsModule,
     MaterialModule,
-    CustomDateTimeModule,
+    CustomDatePickerModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

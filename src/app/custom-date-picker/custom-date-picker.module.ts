@@ -24,5 +24,5 @@ import {MatMomentDateModule} from '@angular/material-moment-adapter';
     MatMomentDateModule,
   ]
 })
-export class CustomDateTimeModule {
+export class CustomDatePickerModule {
 }

@@ -10,12 +10,14 @@ import * as moment from 'moment';
 })
 export class AppComponent implements OnInit {
   form: FormGroup;
+  date = new FormControl((new Date()).toISOString());
 
   constructor(private fb: FormBuilder) {
     const date = new Date();
     this.form = this.fb.group({
-      date1: new FormControl(Date.now()),
-      date2: new FormControl(''),
+      date1: new FormControl(null),
+      date2: new FormControl(null),
+      date3: new FormControl(null),
     });
   }
 
@@ -25,6 +27,7 @@ export class AppComponent implements OnInit {
   onSubmit() {
     const value = this.form.value;
     // const date: moment.Moment = value.date;
+    console.log(this);
     console.log(value);
   }
 }
