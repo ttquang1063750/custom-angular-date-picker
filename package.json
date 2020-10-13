@@ -9,7 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "compodoc": "npx compodoc -p tsconfig.json -s -w",
-    "deploy": "ng build --prod && ngh -no-silent"
+    "deploy": "ng build --prod --base-href https://ttquang1063750.github.io/custom-angular-date-picker/  && ngh -no-silent"
   },
   "private": true,
   "dependencies": {
