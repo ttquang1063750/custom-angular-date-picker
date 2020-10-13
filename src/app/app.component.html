@@ -2,6 +2,18 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="block">
       <mat-form-field appearance="outline">
+        <mat-label>Date Picker with Date ISO</mat-label>
+        <input matInput [matDatepicker]="datepicker0" [timePickerFor]="datepicker0" format="YYYY/MM/DD HH:mm:ss"
+               formControlName="date">
+        <mat-datepicker-toggle matSuffix [for]="datepicker0"></mat-datepicker-toggle>
+        <mat-datepicker #datepicker0></mat-datepicker>
+        <mat-error *ngIf="form.get('date').hasError('matDatepickerParse')">Parse Error
+          with {{form.get('date').errors.matDatepickerParse.text}}</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="block">
+      <mat-form-field appearance="outline">
         <mat-label>Date Picker with new Date()</mat-label>
         <input matInput [matDatepicker]="datepicker" [timePickerFor]="datepicker" format="YYYY/MM/DD HH:mm:ss"
                formControlName="date1">
@@ -15,7 +27,7 @@
     <div class="block">
       <mat-form-field appearance="outline">
         <mat-label>Time Picker Only with Date.now()</mat-label>
-        <input matInput placeholder="00:05" autocomplete="off" [timePickerFor] format="HH:mm:ss"
+        <input matInput placeholder="00:05" autocomplete="off" [timePickerFor] format="HH:mm"
                formControlName="date2">
       </mat-form-field>
     </div>

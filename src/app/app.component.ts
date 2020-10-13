@@ -13,6 +13,7 @@ export class AppComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
+      date: new FormControl((new Date()).toISOString()),
       date1: new FormControl(new Date()),
       date2: new FormControl(Date.now()),
       date3: new FormControl(moment()),
