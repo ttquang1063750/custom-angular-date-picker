@@ -8,7 +8,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "compodoc": "npx compodoc -p tsconfig.json -s -w"
+    "compodoc": "npx compodoc -p tsconfig.json -s -w",
+    "deploy": "ng build --prod && ngh -no-silent"
   },
   "private": true,
   "dependencies": {
