@@ -5,6 +5,7 @@ import {
   HostListener,
   Inject,
   Input,
+  OnDestroy,
   OnInit,
   Optional,
 } from '@angular/core';
@@ -12,13 +13,14 @@ import {DOCUMENT} from '@angular/common';
 import {MatDatepicker} from '@angular/material/datepicker';
 import {DateAdapter, MAT_DATE_FORMATS} from '@angular/material/core';
 import {MAT_MOMENT_DATE_ADAPTER_OPTIONS, MatMomentDateAdapterOptions} from '@angular/material-moment-adapter';
-import {debounceTime, switchMap, tap} from 'rxjs/operators';
+import {debounceTime, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {FormControl, NgControl} from '@angular/forms';
 import {CustomDatePickerAdapter} from './custom-date-picker.adapter';
 import {Overlay, OverlayConfig} from '@angular/cdk/overlay';
 import * as moment from 'moment';
 import {DomService} from './dom.service';
 import {TimePickerComponent} from './time-picker/time-picker.component';
+import {Subject} from 'rxjs';
 
 export function createMissingNgModel() {
   return Error(
@@ -84,15 +86,17 @@ class CustomDateFormat {
     },
   ]
 })
-export class TimePickerForDirective implements OnInit {
-  @Input('coreTimePickerFor') datePicker: MatDatepicker<any>;
-  @Input() format = 'YYYY/MM/DD HH:mm:ss';
-  @Input() configDateParse: DateParse;
-  @Input() configDateDisplay: DateDisplay;
+export class TimePickerForDirective implements OnInit, OnDestroy {
+  @Input('coreTimePickerFor') public datePicker: MatDatepicker<any>;
+  @Input() public format = 'YYYY/MM/DD HH:mm:ss';
+  @Input() public configDateParse: DateParse;
+  @Input() public configDateDisplay: DateDisplay;
+  @Input() public locale: string;
 
   componentRef: ComponentRef<any>;
   formControl: FormControl = new FormControl(null);
-  locale: string;
+  stateChange = new Subject<boolean>();
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -106,7 +110,6 @@ export class TimePickerForDirective implements OnInit {
     if (!this.ngControl) {
       throw createMissingNgModel();
     }
-    this.locale = moment.locale();
   }
 
   @HostListener('click')
@@ -133,16 +136,18 @@ export class TimePickerForDirective implements OnInit {
           ])
       });
       const overlayRef = this.domService.createOverlay(TimePickerComponent, config, this.props());
-      overlayRef.backdropClick().subscribe(() => {
-        const value = this.inputElementRef.nativeElement.value;
-        if (value) {
-          this.viewToModel();
-        } else {
-          this.value = null;
-        }
+      overlayRef.backdropClick()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          const value = this.inputElementRef.nativeElement.value;
+          if (value) {
+            this.updateTime();
+          } else {
+            this.value = value;
+          }
 
-        overlayRef.detach();
-      });
+          overlayRef.detach();
+        });
     }
   }
 
@@ -150,8 +155,7 @@ export class TimePickerForDirective implements OnInit {
   onInput(event) {
     const value = event.target.value;
     if (!this.hasDatePicker()) {
-      const date = this.deserialize(value);
-      this.formControl.setValue(date);
+      this.refreshFormControl(value);
     }
   }
 
@@ -162,6 +166,7 @@ export class TimePickerForDirective implements OnInit {
     } else {
       this.customDateFormat.updateDateFormat({dateInput: this.format});
     }
+    this.locale = this.locale || moment.locale();
     const date = this.deserialize(this.value);
     this.formControl.setValue(date);
     this.viewToModel();
@@ -173,6 +178,15 @@ export class TimePickerForDirective implements OnInit {
       this.ngControl.control.setErrors({matDatepickerParse: {text: this.value}});
       this.ngControl.control.markAsTouched({onlySelf: true});
     }
+
+    // Update time when user increase/decrease time
+    this.stateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isChange) => {
+        if (isChange) {
+          this.updateTime();
+        }
+      });
   }
 
   get value() {
@@ -183,15 +197,22 @@ export class TimePickerForDirective implements OnInit {
     this.ngControl.control.setValue(value);
   }
 
-  private props() {
-    const date = this.deserialize(this.value);
+  private refreshFormControl(value) {
+    let date = this.deserialize(value);
     if (!date || !date.isValid()) {
-      this.formControl.setValue(moment().locale(this.locale));
-    } else {
-      this.formControl.setValue(date);
+      date = moment().locale(this.locale);
+      date.hours(0);
+      date.minutes(0);
     }
+
+    this.formControl.setValue(date);
+  }
+
+  private props() {
+    this.refreshFormControl(this.value);
     return {
       formControl: this.formControl,
+      stateChange: this.stateChange,
       datePickerId: this.datePicker?.id
     };
   }
@@ -204,7 +225,7 @@ export class TimePickerForDirective implements OnInit {
 
     if (!this.hasDatePicker()) {
       this.value = date.format(this.format);
-    }else {
+    } else {
       this.value = date.isValid() ? date : date.format();
     }
   }
@@ -213,6 +234,7 @@ export class TimePickerForDirective implements OnInit {
     this.datePicker
       .openedStream
       .pipe(
+        takeUntil(this.destroy$),
         debounceTime(10),
         tap(() => {
           this.componentRef = this.domService
@@ -230,17 +252,29 @@ export class TimePickerForDirective implements OnInit {
       .subscribe(
         () => {
           if (this.value) {
-            const formControlDate = this.formControl.value as moment.Moment;
-            const originValue = this.value;
-            const date = this.deserialize(originValue ? originValue : moment().locale(this.locale));
-            date.hours(formControlDate.hours());
-            date.minutes(formControlDate.minutes());
-            this.formControl.setValue(date);
+            this.parseFromDatePicker();
             this.viewToModel();
           }
           this.domService.detachComponent(this.componentRef);
         }
       );
+  }
+
+  private parseFromDatePicker() {
+    const formControlDate = this.formControl.value as moment.Moment;
+    const originValue = this.value;
+    const date = this.deserialize(originValue ? originValue : moment().locale(this.locale));
+    date.hours(formControlDate.hours());
+    date.minutes(formControlDate.minutes());
+    this.formControl.setValue(date);
+  }
+
+  private updateTime() {
+    if (this.hasDatePicker()) {
+      this.parseFromDatePicker();
+    }
+
+    this.viewToModel();
   }
 
   private hasDatePicker(): boolean {
@@ -283,5 +317,9 @@ export class TimePickerForDirective implements OnInit {
     return useUtc
       ? moment.utc(date, this.format, this.locale, strict)
       : moment(date, this.format, this.locale, strict);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next(true);
   }
 }

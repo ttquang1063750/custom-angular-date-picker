@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import {TIME_PICKER_FOR} from '../dom.service';
 import {FormControl} from '@angular/forms';
 import {DOCUMENT} from '@angular/common';
+import {Subject} from 'rxjs';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -13,6 +14,7 @@ import {DOCUMENT} from '@angular/common';
 })
 export class TimePickerComponent implements OnInit {
   public formControl: FormControl;
+  public stateChange: Subject<boolean>;
   public datePickerId: string;
   private hours: number;
   private minutes: number;
@@ -37,6 +39,7 @@ export class TimePickerComponent implements OnInit {
 
   ngOnInit(): void {
     this.formControl = this.componentData.formControl;
+    this.stateChange = this.componentData.stateChange;
     this.datePickerId = this.componentData.datePickerId;
 
     const date = this.date;
@@ -77,6 +80,7 @@ export class TimePickerComponent implements OnInit {
     date.hours(this.hours);
     date.minutes(this.minutes);
     this.formControl.setValue(date);
+    this.stateChange.next(true);
   }
 
   get date(): moment.Moment {
