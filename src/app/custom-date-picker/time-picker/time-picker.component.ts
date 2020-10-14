@@ -18,6 +18,7 @@ export class TimePickerComponent implements OnInit {
   private minutes: number;
 
   @HostBinding('class') className = 'core-time-picker';
+
   @HostBinding('class.invisible')
   get invisible() {
     if (this.datePickerId) {
