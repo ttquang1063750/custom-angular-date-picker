@@ -18,14 +18,16 @@ export const FORM_CUSTOM_DISPLAY_ERRORS = new InjectionToken('FORM_CUSTOM_DISPLA
       max: ({max, actual}) => `Expect a maximum value of ${max} but got ${actual}`,
       minlength: ({requiredLength, actualLength}) => `Expect a minimum of ${requiredLength} characters but got ${actualLength}`,
       maxlength: ({requiredLength, actualLength}) => `Expect a maximum of ${requiredLength} characters but got ${actualLength}`,
-      default: ({controlName, ...arg}) => `
-      The ${controlName} error with ${Object.keys(arg).map(k => k + ' is ' + arg[k]).join(' and ')}
-      `,
     };
 
     return customErrors;
   }
 });
+export function renderDefault({controlName, ...arg}) {
+  return `
+      The ${controlName} error with ${Object.keys(arg).map(k => k + ' is ' + arg[k]).join(' and ')}
+      `;
+}
 
 @Directive({
   selector: '[coreGenericDisplayError]'
@@ -88,7 +90,7 @@ export class GenericDisplayErrorDirective implements OnInit, AfterViewInit, OnDe
           const o = this.toObject(key, controlErrors[key]);
           let fn = this.defaultCustomErrors[key];
           if (!fn) {
-            fn = this.defaultCustomErrors.default;
+            fn = renderDefault;
           }
 
           messages.push(fn({controlName, ...o}));
