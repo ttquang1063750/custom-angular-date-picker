@@ -4,19 +4,26 @@
       <div class="block">
         <mat-form-field appearance="outline">
           <mat-label>Date Picker(YYYY/MM/DD HH:mm:ss)</mat-label>
-          <input autocomplete="off" matInput [matDatepicker]="datepicker0" [coreTimePickerFor]="datepicker0" format="YYYY/MM/DD HH:mm:ss"
-                 formControlName="dateNull">
+          <input
+            autocomplete="off"
+            matInput
+            [matDatepicker]="datepicker0"
+            [coreTimePickerFor]="datepicker0"
+            [coreGenericDisplayError]="matErrorDateNull"
+            format="YYYY/MM/DD HH:mm:ss"
+            formControlName="dateNull"
+          >
           <mat-datepicker-toggle matSuffix [for]="datepicker0"></mat-datepicker-toggle>
           <mat-datepicker #datepicker0></mat-datepicker>
-          <mat-error *ngIf="form.get('dateNull').hasError('matDatepickerParse')">Parse Error
-            with {{form.get('dateNull').errors.matDatepickerParse.text}}</mat-error>
+          <mat-error #matErrorDateNull></mat-error>
         </mat-form-field>
       </div>
 
       <div class="block">
         <mat-form-field appearance="outline">
           <mat-label>Date Picker(YYYY/MM/DD hh:mm:ss a)</mat-label>
-          <input autocomplete="off" matInput [matDatepicker]="datepicker" [coreTimePickerFor]="datepicker" format="YYYY/MM/DD hh:mm:ss a"
+          <input autocomplete="off" matInput [matDatepicker]="datepicker" [coreTimePickerFor]="datepicker"
+                 format="YYYY/MM/DD hh:mm:ss a"
                  formControlName="dateMoment">
           <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
           <mat-datepicker #datepicker></mat-datepicker>
@@ -28,10 +35,16 @@
       <div class="block">
         <mat-form-field appearance="outline">
           <mat-label>Time Picker(HH:mm) with validation</mat-label>
-          <input autocomplete="off" matInput placeholder="00:05" [coreTimePickerFor] format="HH:mm"
-                 formControlName="timePicker">
-          <mat-error *ngIf="form.get('timePicker').hasError('required')">Time is required</mat-error>
-          <mat-error *ngIf="form.get('timePicker').hasError('matDatepickerParse')">Parse Error with {{form.get('timePicker').errors.matDatepickerParse.text}}</mat-error>
+          <input
+            autocomplete="off"
+            matInput
+            placeholder="00:05"
+            [coreTimePickerFor]
+            [coreGenericDisplayError]="matErrorTimePicker"
+            format="HH:mm"
+            formControlName="timePicker"
+          >
+          <mat-error #matErrorTimePicker></mat-error>
         </mat-form-field>
       </div>
 
@@ -47,6 +60,7 @@
               autocomplete="off"
               formControlName="start"
               [coreTimePickerFor]="pickerRange"
+              [coreGenericDisplayError]="matErrorStartRange"
               format="YYYY/MM/DD HH:mm"
               placeholder="Start date"
             >
@@ -55,6 +69,7 @@
               autocomplete="off"
               formControlName="end"
               [coreTimePickerFor]="pickerRange"
+              [coreGenericDisplayError]="matErrorEndRange"
               format="YYYY/MM/DD HH:mm"
               placeholder="End date"
             >
@@ -62,8 +77,8 @@
           <mat-datepicker-toggle matSuffix [for]="pickerRange"></mat-datepicker-toggle>
           <mat-date-range-picker #pickerRange></mat-date-range-picker>
 
-          <mat-error *ngIf="form.get('range').get('start').hasError('matStartDateInvalid')">Invalid start date</mat-error>
-          <mat-error *ngIf="form.get('range').get('end').hasError('matEndDateInvalid')">Invalid end date</mat-error>
+          <mat-error #matErrorStartRange></mat-error>
+          <mat-error #matErrorEndRange></mat-error>
         </mat-form-field>
       </div>
 

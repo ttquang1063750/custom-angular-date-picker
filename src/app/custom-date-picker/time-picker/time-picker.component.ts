@@ -6,7 +6,6 @@ import {DOCUMENT} from '@angular/common';
 import {Subject} from 'rxjs';
 
 @Component({
-  // tslint:disable-next-line:component-selector
   selector: 'core-time-picker',
   templateUrl: './time-picker.component.html',
   styleUrls: ['./time-picker.component.scss'],

@@ -13,8 +13,8 @@ export class AppComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      dateNull: new FormControl(null),
-      dateMoment: new FormControl(moment()),
+      dateNull: new FormControl(null, Validators.required),
+      dateMoment: new FormControl(moment(), Validators.required),
       timePicker: new FormControl('jcadlcjlajcadCJA', Validators.required),
       range: new FormGroup({
         start: new FormControl(moment()),

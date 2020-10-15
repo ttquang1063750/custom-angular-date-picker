@@ -73,7 +73,6 @@ class CustomDateFormat {
 }
 
 @Directive({
-  // tslint:disable-next-line:directive-selector
   selector: '[coreTimePickerFor]',
   providers: [
     {
