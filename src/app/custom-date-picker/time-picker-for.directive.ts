@@ -11,85 +11,28 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {MatDatepicker} from '@angular/material/datepicker';
-import {DateAdapter, MAT_DATE_FORMATS} from '@angular/material/core';
 import {MAT_MOMENT_DATE_ADAPTER_OPTIONS, MatMomentDateAdapterOptions} from '@angular/material-moment-adapter';
 import {debounceTime, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {FormControl, NgControl} from '@angular/forms';
-import {CustomDatePickerAdapter} from './custom-date-picker.adapter';
 import {Overlay, OverlayConfig} from '@angular/cdk/overlay';
 import * as moment from 'moment';
 import {DomService} from './dom.service';
 import {TimePickerComponent} from './time-picker/time-picker.component';
 import {Subject} from 'rxjs';
+import {MAT_DATE_FORMATS} from '@angular/material/core';
+import {CustomDateFormat} from './custom-date-format';
 
 export function createMissingNgModel() {
   return Error(
-    'coreTimePickerFor: No NgModel found for data binding. You must binding with these options:' +
-    ' [(ngModel)]="date" or formControlName="date" or [formControl]="date"'
+    'coreTimePickerFor: No NgModel found for data binding.'
   );
 }
 
-type DateParse = { dateInput: string };
-type DateDisplay = DateParse & {
-  monthYearLabel?: string,
-  dateA11yLabel?: string,
-  monthYearA11yLabel?: string,
-};
-
-class CustomDateFormat {
-  private _parse: DateParse = {
-    dateInput: 'YYYY/MM/DD HH:mm:ss'
-  };
-  private _display: DateDisplay = {
-    dateInput: 'YYYY/MM/DD HH:mm:ss',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMM YYYY'
-  };
-
-  set parse(parse: DateParse) {
-    this._parse = Object.assign({}, this._parse, parse);
-  }
-
-  get parse(): DateParse {
-    return this._parse;
-  }
-
-  set display(display: DateDisplay) {
-    this._display = Object.assign({}, this._display, display);
-  }
-
-  get display(): DateDisplay {
-    return this._display;
-  }
-
-  updateDateFormat(parse: DateParse, display?: DateDisplay) {
-    this.parse = parse;
-    if (!display) {
-      display = parse;
-    }
-    this.display = display;
-  }
-}
-
 @Directive({
-  selector: '[coreTimePickerFor]',
-  providers: [
-    {
-      provide: DateAdapter,
-      useClass: CustomDatePickerAdapter
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useClass: CustomDateFormat,
-    },
-  ]
+  selector: '[coreTimePickerFor]'
 })
 export class TimePickerForDirective implements OnInit, OnDestroy {
   @Input('coreTimePickerFor') public datePicker: MatDatepicker<any>;
-  @Input() public format = 'YYYY/MM/DD HH:mm:ss';
-  @Input() public configDateParse: DateParse;
-  @Input() public configDateDisplay: DateDisplay;
   @Input() public locale: string;
 
   componentRef: ComponentRef<any>;
@@ -99,7 +42,7 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    @Inject(MAT_DATE_FORMATS) private customDateFormat: CustomDateFormat,
+    @Inject(MAT_DATE_FORMATS) public matDateFormat: CustomDateFormat,
     @Inject(ElementRef) private inputElementRef: ElementRef<HTMLInputElement>,
     private domService: DomService,
     private overlay: Overlay,
@@ -159,12 +102,6 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // This one should place on top to reset the format based on component
-    if (this.configDateParse) {
-      this.customDateFormat.updateDateFormat(this.configDateParse, this.configDateDisplay);
-    } else {
-      this.customDateFormat.updateDateFormat({dateInput: this.format});
-    }
     this.locale = this.locale || moment.locale();
     const date = this.deserialize(this.value);
     this.formControl.setValue(date);
@@ -217,13 +154,14 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
   }
 
   private viewToModel() {
+    const format = this.matDateFormat.parse.dateInput;
     const date = this.formControl.value;
     if (!date) {
       return;
     }
 
     if (!this.hasDatePicker()) {
-      this.value = date.format(this.format);
+      this.value = date.format(format);
     } else {
       this.value = date.isValid() ? date : date.format();
     }
@@ -281,6 +219,7 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
   }
 
   private deserialize(value: any): moment.Moment | null {
+    const format = this.matDateFormat.parse.dateInput;
     if (!value) {
       return null;
     }
@@ -296,7 +235,7 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
     }
 
     if (value instanceof Date || typeOfValue === 'string') {
-      date = this.toMoment(value);
+      date = this.toMoment(value, format);
     }
 
     if (date && date.isValid()) {
@@ -304,18 +243,18 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
     }
 
     if (!this.hasDatePicker()) {
-      return moment(value, this.format).locale(this.locale);
+      return moment(value, format).locale(this.locale);
     }
 
     return moment.invalid();
   }
 
-  private toMoment(date: moment.MomentInput): moment.Moment {
+  private toMoment(date: moment.MomentInput, format: string): moment.Moment {
     const {strict, useUtc}: MatMomentDateAdapterOptions = this._options || {};
 
     return useUtc
-      ? moment.utc(date, this.format, this.locale, strict)
-      : moment(date, this.format, this.locale, strict);
+      ? moment.utc(date, format, this.locale, strict)
+      : moment(date, format, this.locale, strict);
   }
 
   ngOnDestroy(): void {

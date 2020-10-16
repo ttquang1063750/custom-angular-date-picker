@@ -6,15 +6,18 @@ import {MaterialModule} from '../material.module';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatMomentDateModule} from '@angular/material-moment-adapter';
+import { DatePickerFormatDirective } from './date-picker-format.directive';
 
 
 @NgModule({
   declarations: [
     TimePickerComponent,
-    TimePickerForDirective
+    TimePickerForDirective,
+    DatePickerFormatDirective
   ],
   exports: [
-    TimePickerForDirective
+    TimePickerForDirective,
+    DatePickerFormatDirective,
   ],
   imports: [
     CommonModule,
