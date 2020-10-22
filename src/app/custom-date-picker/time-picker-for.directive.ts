@@ -1,5 +1,4 @@
 import {
-  ComponentRef,
   Directive,
   ElementRef,
   HostListener,
@@ -7,120 +6,96 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Optional,
 } from '@angular/core';
-import {DOCUMENT} from '@angular/common';
-import {MatDatepicker} from '@angular/material/datepicker';
-import {MAT_MOMENT_DATE_ADAPTER_OPTIONS, MatMomentDateAdapterOptions} from '@angular/material-moment-adapter';
-import {debounceTime, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {takeUntil} from 'rxjs/operators';
 import {FormControl, NgControl} from '@angular/forms';
 import {Overlay, OverlayConfig} from '@angular/cdk/overlay';
 import * as moment from 'moment';
 import {DomService} from './dom.service';
 import {TimePickerComponent} from './time-picker/time-picker.component';
 import {Subject} from 'rxjs';
-import {MAT_DATE_FORMATS} from '@angular/material/core';
-import {CustomDateFormat} from './custom-date-format';
-
-export function createMissingNgModel() {
-  return Error(
-    'coreTimePickerFor: No NgModel found for data binding.'
-  );
-}
+import {createMissingNgModel, TimePicker} from './common';
+import {MatInput} from '@angular/material/input';
 
 @Directive({
   selector: '[coreTimePickerFor]'
 })
-export class TimePickerForDirective implements OnInit, OnDestroy {
-  @Input('coreTimePickerFor') public datePicker: MatDatepicker<any>;
+export class TimePickerForDirective implements OnInit, OnDestroy, TimePicker<any> {
+  @Input('coreTimePickerFor') public format = 'HH:mm';
   @Input() public locale: string;
+  @Input() public stepHours = 1;
+  @Input() public stepMinutes = 1;
 
-  componentRef: ComponentRef<any>;
   formControl: FormControl = new FormControl(null);
   stateChange = new Subject<boolean>();
   destroy$: Subject<boolean> = new Subject<boolean>();
 
+  @HostListener('click')
+  onClick() {
+    const width = this.inputElementRef.nativeElement.getBoundingClientRect().width;
+    const config = new OverlayConfig({
+      width: `${width + 20}px`,
+      hasBackdrop: true,
+      backdropClass: 'cdk-overlay-transparent-backdrop',
+      positionStrategy: this.overlay
+        .position()
+        .flexibleConnectedTo(this.inputElementRef)
+        .withPositions([
+          {
+            originX: 'start',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetY: 15,
+            offsetX: -10,
+            panelClass: 'mat-datepicker-content'
+          }
+        ])
+    });
+
+    const overlayRef = this.domService.createOverlay(TimePickerComponent, config, this.getProps());
+    overlayRef
+      .backdropClick()
+      .subscribe(() => {
+        const value = this.inputElementRef.nativeElement.value;
+        if (value) {
+          this.viewToModel();
+        } else {
+          this.value = value;
+        }
+
+        overlayRef.detach();
+      });
+  }
+
+  @HostListener('input', ['$event'])
+  onInput(event) {
+    this.updateFormControl(event.target.value);
+  }
+
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    @Inject(MAT_DATE_FORMATS) public matDateFormat: CustomDateFormat,
     @Inject(ElementRef) private inputElementRef: ElementRef<HTMLInputElement>,
+    @Inject(MatInput) private matInput: MatInput,
     private domService: DomService,
     private overlay: Overlay,
-    @Optional() private ngControl: NgControl,
-    @Optional() @Inject(MAT_MOMENT_DATE_ADAPTER_OPTIONS) private _options?: MatMomentDateAdapterOptions,
+    private ngControl: NgControl,
   ) {
     if (!this.ngControl) {
       throw createMissingNgModel();
     }
   }
 
-  @HostListener('click')
-  onClick() {
-    if (!this.datePicker) {
-      const width = this.inputElementRef.nativeElement.getBoundingClientRect().width;
-      const config = new OverlayConfig({
-        width: `${width + 20}px`,
-        hasBackdrop: true,
-        backdropClass: 'cdk-overlay-transparent-backdrop',
-        positionStrategy: this.overlay
-          .position()
-          .flexibleConnectedTo(this.inputElementRef)
-          .withPositions([
-            {
-              originX: 'start',
-              originY: 'bottom',
-              overlayX: 'start',
-              overlayY: 'top',
-              offsetY: 15,
-              offsetX: -10,
-              panelClass: 'mat-datepicker-content'
-            }
-          ])
-      });
-      const overlayRef = this.domService.createOverlay(TimePickerComponent, config, this.props());
-      overlayRef.backdropClick()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          const value = this.inputElementRef.nativeElement.value;
-          if (value) {
-            this.updateTime();
-          } else {
-            this.value = value;
-          }
-
-          overlayRef.detach();
-        });
-    }
-  }
-
-  @HostListener('input', ['$event'])
-  onInput(event) {
-    const value = event.target.value;
-    if (!this.hasDatePicker()) {
-      this.refreshFormControl(value);
-    }
-  }
-
   ngOnInit(): void {
     this.locale = this.locale || moment.locale();
-    const date = this.deserialize(this.value);
-    this.formControl.setValue(date);
+    this.updateFormControl(this.value);
     this.viewToModel();
-    if (this.hasDatePicker()) {
-      this.embedTimePicker();
-    }
-
-    if (date && !date.isValid()) {
-      this.ngControl.control.setErrors({matDatepickerParse: {text: this.value}});
-      this.ngControl.control.markAsTouched({onlySelf: true});
-    }
 
     // Update time when user increase/decrease time
     this.stateChange
       .pipe(takeUntil(this.destroy$))
       .subscribe((isChange) => {
         if (isChange) {
-          this.updateTime();
+          this.viewToModel();
         }
       });
   }
@@ -133,128 +108,38 @@ export class TimePickerForDirective implements OnInit, OnDestroy {
     this.ngControl.control.setValue(value);
   }
 
-  private refreshFormControl(value) {
-    let date = this.deserialize(value);
-    if (!date || !date.isValid()) {
-      date = moment().locale(this.locale);
-      date.hours(0);
-      date.minutes(0);
-    }
-
+  private updateFormControl(value) {
+    const date = this.deserialize(value);
     this.formControl.setValue(date);
   }
 
-  private props() {
-    this.refreshFormControl(this.value);
+  getProps() {
+    this.updateFormControl(this.value);
     return {
       formControl: this.formControl,
-      stateChange: this.stateChange,
-      datePickerId: this.datePicker?.id
+      stepHours: this.stepHours,
+      stepMinutes: this.stepMinutes,
+      stateChange: this.stateChange
     };
   }
 
-  private viewToModel() {
-    const format = this.matDateFormat.parse.dateInput;
+  viewToModel() {
     const date = this.formControl.value;
     if (!date) {
       return;
     }
 
-    if (!this.hasDatePicker()) {
-      this.value = date.format(format);
-    } else {
-      this.value = date.isValid() ? date : date.format();
-    }
+    this.value = date.format(this.format);
   }
 
-  private embedTimePicker() {
-    this.datePicker
-      .openedStream
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(10),
-        tap(() => {
-          this.componentRef = this.domService
-            .createComponent(
-              TimePickerComponent,
-              this.document.querySelector(`#${this.datePicker.id}`),
-              this.props(),
-              'wrapper-core-time-picker'
-            );
-        }),
-        switchMap(() => {
-          return this.datePicker.closedStream;
-        })
-      )
-      .subscribe(
-        () => {
-          if (this.value) {
-            this.parseFromDatePicker();
-            this.viewToModel();
-          }
-          this.domService.detachComponent(this.componentRef);
-        }
-      );
-  }
-
-  private parseFromDatePicker() {
-    const formControlDate = this.formControl.value as moment.Moment;
-    const originValue = this.value;
-    const date = this.deserialize(originValue ? originValue : moment().locale(this.locale));
-    date.hours(formControlDate.hours());
-    date.minutes(formControlDate.minutes());
-    this.formControl.setValue(date);
-  }
-
-  private updateTime() {
-    if (this.hasDatePicker()) {
-      this.parseFromDatePicker();
-    }
-
-    this.viewToModel();
-  }
-
-  private hasDatePicker(): boolean {
-    return !!this.datePicker;
-  }
-
-  private deserialize(value: any): moment.Moment | null {
-    const format = this.matDateFormat.parse.dateInput;
-    if (!value) {
-      return null;
-    }
-
-    let date;
-    if (moment.isMoment(value)) {
-      return value.clone();
-    }
-
-    const typeOfValue = typeof value;
-    if (typeOfValue === 'number') {
-      return moment(value).locale(this.locale);
-    }
-
-    if (value instanceof Date || typeOfValue === 'string') {
-      date = this.toMoment(value, format);
-    }
-
-    if (date && date.isValid()) {
+  deserialize(value: any): moment.Moment | null {
+    const format = this.format;
+    const date = moment(value, format).locale(this.locale);
+    if (date.isValid()) {
       return date;
     }
 
-    if (!this.hasDatePicker()) {
-      return moment(value, format).locale(this.locale);
-    }
-
-    return moment.invalid();
-  }
-
-  private toMoment(date: moment.MomentInput, format: string): moment.Moment {
-    const {strict, useUtc}: MatMomentDateAdapterOptions = this._options || {};
-
-    return useUtc
-      ? moment.utc(date, format, this.locale, strict)
-      : moment(date, format, this.locale, strict);
+    return moment('00:00', format).locale(this.locale);
   }
 
   ngOnDestroy(): void {

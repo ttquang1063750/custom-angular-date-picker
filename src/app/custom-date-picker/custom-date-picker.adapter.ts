@@ -1,4 +1,4 @@
-import {Inject, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {MomentDateAdapter} from '@angular/material-moment-adapter';
 import * as moment from 'moment';
 

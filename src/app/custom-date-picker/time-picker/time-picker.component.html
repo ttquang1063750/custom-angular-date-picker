@@ -1,19 +1,19 @@
 <div class="segment">
-  <button [attr.data-cy]="'button-add-hours-plus'" mat-icon-button (click)="addHours(1)">
+  <button [attr.data-cy]="'button-add-hours-plus'" mat-icon-button (click)="addHours(stepHours)">
     <mat-icon>expand_less</mat-icon>
   </button>
   <span>{{displayHours}}</span>
-  <button [attr.data-cy]="'button-add-hours-minus'"  mat-icon-button (click)="addHours(-1)">
+  <button [attr.data-cy]="'button-add-hours-minus'"  mat-icon-button (click)="addHours(-stepHours)">
     <mat-icon>expand_more</mat-icon>
   </button>
 </div>
 <div class="segment">:</div>
 <div class="segment">
-  <button [attr.data-cy]="'button-add-minutes-plus'"  mat-icon-button (click)="addMinutes(1)">
+  <button [attr.data-cy]="'button-add-minutes-plus'"  mat-icon-button (click)="addMinutes(stepMinutes)">
     <mat-icon>expand_less</mat-icon>
   </button>
   <span>{{displayMinutes}}</span>
-  <button [attr.data-cy]="'button-add-minutes-minus'" mat-icon-button (click)="addMinutes(-1)">
+  <button [attr.data-cy]="'button-add-minutes-minus'" mat-icon-button (click)="addMinutes(-stepMinutes)">
     <mat-icon>expand_more</mat-icon>
   </button>
 </div>

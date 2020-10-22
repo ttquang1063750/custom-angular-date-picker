@@ -13,10 +13,10 @@ export class AppComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      dateOnlyFormat: new FormControl(null, Validators.required),
-      dateNull: new FormControl(null, Validators.required),
+      dateOnlyFormat: new FormControl(new Date(), Validators.required),
+      dateNull: new FormControl('2020-10-22T10:06:00.000Z', Validators.required),
       dateMoment: new FormControl(moment(), Validators.required),
-      timePicker: new FormControl('invalid date', Validators.required),
+      timePicker: new FormControl(new Date(), Validators.required),
       range: new FormGroup({
         start: new FormControl(moment()),
         end: new FormControl(moment())
@@ -28,6 +28,6 @@ export class AppComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.form);
+    console.log(this.form.value);
   }
 }

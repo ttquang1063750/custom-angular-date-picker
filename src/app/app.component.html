@@ -25,7 +25,7 @@
             autocomplete="off"
             matInput
             [matDatepicker]="datepicker0"
-            [coreTimePickerFor]="datepicker0"
+            [coreDateTimePickerFor]="datepicker0"
             coreDatePickerFormat="YYYY/MM/DD HH:mm:ss"
             [coreGenericDisplayError]="matErrorDateNull"
             formControlName="dateNull"
@@ -39,7 +39,7 @@
       <div class="block">
         <mat-form-field appearance="outline">
           <mat-label>Date Picker(YYYY/MM/DD hh:mm:ss a)</mat-label>
-          <input autocomplete="off" matInput [matDatepicker]="datepicker1" [coreTimePickerFor]="datepicker1"
+          <input autocomplete="off" matInput [matDatepicker]="datepicker1" [coreDateTimePickerFor]="datepicker1"
                  coreDatePickerFormat="YYYY/MM/DD hh:mm:ss a"
                  formControlName="dateMoment">
           <mat-datepicker-toggle matSuffix [for]="datepicker1"></mat-datepicker-toggle>
@@ -56,9 +56,8 @@
             autocomplete="off"
             matInput
             placeholder="00:05"
-            [coreTimePickerFor]
+            coreTimePickerFor="HH:mm"
             [coreGenericDisplayError]="matErrorTimePicker"
-            coreDatePickerFormat="HH:mm"
             formControlName="timePicker"
           >
           <mat-error #matErrorTimePicker></mat-error>
@@ -76,7 +75,7 @@
               matStartDate
               autocomplete="off"
               formControlName="start"
-              [coreTimePickerFor]="pickerRange"
+              [coreDateTimePickerFor]="pickerRange"
               [coreGenericDisplayError]="matErrorStartRange"
               coreDatePickerFormat="YYYY/MM/DD HH:mm"
               placeholder="Start date"
@@ -85,7 +84,7 @@
               matEndDate
               autocomplete="off"
               formControlName="end"
-              [coreTimePickerFor]="pickerRange"
+              [coreDateTimePickerFor]="pickerRange"
               [coreGenericDisplayError]="matErrorEndRange"
               coreDatePickerFormat="YYYY/MM/DD HH:mm"
               placeholder="End date"
@@ -109,8 +108,6 @@
   </div>
 
   <div class="segment">
-    <pre>
-    {{form.value | json}}
-  </pre>
+    <pre>{{form.value | json}}</pre>
   </div>
 </div>

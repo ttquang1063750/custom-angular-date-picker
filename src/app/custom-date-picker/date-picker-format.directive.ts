@@ -1,7 +1,8 @@
-import {Directive, Inject, Input} from '@angular/core';
+import {Directive, Inject, Input, Optional} from '@angular/core';
 import {DateAdapter, MAT_DATE_FORMATS} from '@angular/material/core';
 import {CustomDatePickerAdapter} from './custom-date-picker.adapter';
 import {CustomDateFormat, DateDisplay, DateParse} from './custom-date-format';
+import {NgControl} from '@angular/forms';
 
 @Directive({
   selector: '[coreDatePickerFormat]',
@@ -22,18 +23,19 @@ export class DatePickerFormatDirective {
 
   @Input('coreDatePickerFormat')
   set coreDatePickerFormat(format: string) {
-    this.format = format;
     if (this.configDateParse) {
-      this.matDateFormat.updateDateFormat(this.configDateParse, this.configDateDisplay);
+      this.customDateFormat.updateDateFormat(this.configDateParse, this.configDateDisplay);
     } else {
-      this.matDateFormat.updateDateFormat({dateInput: format});
+      this.customDateFormat.updateDateFormat({dateInput: format});
     }
+
+    const value = this.ngControl.value;
+    this.ngControl.valueAccessor.writeValue(value);
   }
 
-  public format: string;
-
   constructor(
-    @Inject(MAT_DATE_FORMATS) public matDateFormat: CustomDateFormat,
+    @Inject(MAT_DATE_FORMATS) public customDateFormat: CustomDateFormat,
+    @Optional() private ngControl: NgControl,
   ) {
   }
 }

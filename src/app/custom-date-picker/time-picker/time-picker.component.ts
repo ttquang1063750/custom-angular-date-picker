@@ -13,6 +13,8 @@ import {Subject} from 'rxjs';
 })
 export class TimePickerComponent implements OnInit {
   public formControl: FormControl;
+  public stepHours: number;
+  public stepMinutes: number;
   public stateChange: Subject<boolean>;
   public datePickerId: string;
   private hours: number;
@@ -39,6 +41,8 @@ export class TimePickerComponent implements OnInit {
   ngOnInit(): void {
     this.formControl = this.componentData.formControl;
     this.stateChange = this.componentData.stateChange;
+    this.stepHours = this.componentData.stepHours;
+    this.stepMinutes = this.componentData.stepMinutes;
     this.datePickerId = this.componentData.datePickerId;
 
     const date = this.date;
